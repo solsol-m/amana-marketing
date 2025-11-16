@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Navbar } from '../../src/components/ui/navbar';
 import { Footer } from '../../src/components/ui/footer';
-import BubbleMap from '../../src/components/BubbleMap';
+const BubbleMap = dynamic(() => import('../../src/components/BubbleMap'), { ssr: false });
 import { fetchMarketingData } from '../../src/lib/api';
 import { MarketingData } from '../../src/types/marketing';
 
@@ -49,14 +50,7 @@ export default function RegionView() {
           ) : error ? (
             <div className="h-[500px] flex items-center justify-center text-red-300">{error}</div>
           ) : (
-            <BubbleMap 
-              marketingData={marketingData}
-              projection="geoMercator"
-              focusCenter={[50, 25]}
-              focusScale={1100}
-              backgroundFill="#1F2937"
-              labelColor="#F9FAFB"
-            />
+            <BubbleMap marketingData={marketingData} />
           )}
         </div>
         
