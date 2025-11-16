@@ -31,6 +31,14 @@ export default function RootLayout({
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossOrigin=""
         />
+        <style>{`
+          .leaflet-container {
+            background: #1F2937 !important;
+          }
+          .leaflet-control-container {
+            display: none !important;
+          }
+        `}</style>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

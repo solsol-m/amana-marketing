@@ -81,12 +81,21 @@ export default function BubbleMap({ marketingData }: BubbleMapProps) {
 
   useEffect(() => {
     setMounted(true);
-    
-    if (typeof window !== 'undefined' && mapRef.current && !leafletMapRef.current) {
+  }, []);
+
+  useEffect(() => {
+    if (!mounted || typeof window === 'undefined' || !mapRef.current || leafletMapRef.current) {
+      return;
+    }
+
+    // Add delay for Vercel deployment
+    const timer = setTimeout(() => {
       // Dynamic import of Leaflet to avoid SSR issues
       import('leaflet').then((L) => {
+        if (!mapRef.current || leafletMapRef.current) return;
+
         // Initialize map
-        const map = L.map(mapRef.current!, {
+        const map = L.map(mapRef.current, {
           center: [25, 50],
           zoom: 5,
           scrollWheelZoom: false
@@ -98,6 +107,13 @@ export default function BubbleMap({ marketingData }: BubbleMapProps) {
         }).addTo(map);
 
         leafletMapRef.current = map;
+
+        // Force map resize after initialization
+        setTimeout(() => {
+          if (leafletMapRef.current) {
+            leafletMapRef.current.invalidateSize();
+          }
+        }, 100);
 
         // Add markers when data is available
         if (points.length > 0) {
@@ -135,22 +151,27 @@ export default function BubbleMap({ marketingData }: BubbleMapProps) {
             }).addTo(map);
           });
         }
+      }).catch(error => {
+        console.error('Failed to load Leaflet:', error);
       });
-    }
+    }, 500);
 
     return () => {
+      clearTimeout(timer);
       if (leafletMapRef.current) {
         leafletMapRef.current.remove();
         leafletMapRef.current = null;
       }
     };
-  }, [points, maxRevenue, maxSpend]);
+  }, [mounted, points, maxRevenue, maxSpend]);
 
   if (!mounted) {
     return (
       <div className="w-full bg-gray-800 rounded-lg p-4">
         <h3 className="text-white text-lg font-semibold mb-3">Regional Performance Map</h3>
-        <div className="w-full h-[380px] sm:h-[420px] md:h-[520px] bg-gray-700/40 rounded" />
+        <div className="w-full h-[380px] sm:h-[420px] md:h-[520px] bg-gray-700/40 rounded flex items-center justify-center">
+          <div className="text-gray-400">Loading map...</div>
+        </div>
       </div>
     );
   }
